@@ -1,0 +1,146 @@
+{
+  "dblanchard": {
+    "info": {
+      "nick_name": "Dylan",
+      "first_name": "Dylan",
+      "last_name": "Blanchard"
+    },
+    "tasks": [
+      {
+        "name": "RSS & API",
+        "brief": "Build in ability to add RSS feeds from national news sources to the news/event scraper. Also take a look at scraping event feeds from Facebook, Meetup, and Eventbrite",
+        "start": "2019-06-14",
+        "target": "2019-06-28",
+        "debrief": "",
+        "end": ""
+      }
+    ]
+  },
+  "dfrumkin": {
+    "info": {
+      "nick_name": "Daniel",
+      "first_name": "Daniel",
+      "last_name": "Frumkin"
+    },
+    "tasks": [
+      {
+        "name": "Website Makeover & Organization",
+        "brief": "Work with Zian to modify website, ensuring common look and feel with branding. Also, work with Thien-Nam and others create a plan for the upcoming content surge",
+        "start": "2019-06-19",
+        "target": "2019-07-01",
+        "debrief": "",
+        "end": ""
+      }
+    ]
+  },
+  "hgamble": {
+    "info": {
+      "nick_name": "Harper",
+      "first_name": "Harper",
+      "last_name": "Gamble"
+    },
+    "tasks": [
+      {
+        "name": "Read/Review \"The Price of Philanthropy\"",
+        "brief": "Read the book \"The Price of Philanthropy\", which seems very relevant to Ibis. Extract some quotes and statistics and ideally write a book review at the end.",
+        "start": "2019-06-13",
+        "target": "2019-06-29",
+        "debrief": "",
+        "end": ""
+      }
+    ]
+  },
+  "jchavez": {
+    "info": {
+      "nick_name": "Jordan",
+      "first_name": "Jordan",
+      "last_name": "Chavez"
+    },
+    "tasks": [
+      {
+        "name": "Network and Research",
+        "brief": "Reach out to contacts among UNM Econ professors to gage interest. Meanwhile, do some research to get more familiar with the nonprofit industry as a whole",
+        "start": "2019-06-13",
+        "target": "2019-06-27",
+        "debrief": "",
+        "end": ""
+      }
+    ]
+  },
+  "jgrindell": {
+    "info": {
+      "nick_name": "Jess",
+      "first_name": "Jessica",
+      "last_name": "Grindell"
+    },
+    "tasks": [
+      {
+        "name": "Read/Review \"Just Giving\" & \"Radical Markets\"",
+        "brief": "Read the book \"Just Giving\", which seems very relevant to Ibis. Extract some quotes and statistics from this book and ideally write a book review at the end. Triage \"Radical Markets\", which may or may not be relevant.",
+        "start": "2019-06-16",
+        "target": "2019-07-07",
+        "debrief": "",
+        "end": ""
+      }
+    ]
+  },
+  "jpham": {
+    "info": {
+      "nick_name": "JPham",
+      "first_name": "Jennifer",
+      "last_name": "Pham"
+    },
+    "tasks": [
+      {
+        "name": "Finish Path Appears",
+        "brief": "Finish the book \"A Path Appears\", which is a good overview of the global world of social impact. This will also be a useful source to mine some initial quotes and statistics for social media",
+        "start": "2019-06-15",
+        "target": "2019-07-06",
+        "debrief": "",
+        "end": ""
+      }
+    ]
+  },
+  "ssherwood": {
+    "info": {
+      "nick_name": "Spencer",
+      "first_name": "Spencer",
+      "last_name": "Sherwood"
+    },
+    "tasks": [
+      {
+        "name": "Newsletter Aggregation",
+        "brief": "Obtain an initial list of local nonprofit news letters from the United Way grantees list. We will use this list to create a strategy for integrating local newsletters into the app",
+        "start": "2019-06-19",
+        "target": "2019-07-01",
+        "debrief": "",
+        "end": ""
+      }
+    ]
+  },
+  "zdinh": {
+    "info": {
+      "nick_name": "Zian",
+      "first_name": "Zian",
+      "last_name": "Dinh"
+    },
+    "tasks": [
+      {
+        "name": "Website Makeover, News & Event Wireframes",
+        "brief": "Correspond with (primary) Daniel to enforce common look and feel. Seperately, create a wireframe for single News page and a single Event page",
+        "start": "2019-06-15",
+        "target": "2019-07-18",
+        "debrief": "",
+        "end": ""
+      }
+    ]
+  },
+  "zthompson": {
+    "info": {
+      "nick_name": "Zach",
+      "first_name": "Zachary",
+      "last_name": "Thompson"
+    },
+    "tasks": []
+  }
+}
