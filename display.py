@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import json
-import textwrap
 import argparse
 
 import numpy as np
