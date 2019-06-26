@@ -5,7 +5,7 @@ import textwrap
 import argparse
 
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt, mpld3
 
 from collections import OrderedDict
 from datetime import datetime, date
@@ -18,6 +18,8 @@ def run(offset, window):
 
     with open('record.json') as fd:
         data = json.load(fd, object_pairs_hook=OrderedDict)
+
+    data = OrderedDict(reversed(list(data.items())))
 
     # Fixing random state for reproducibility
     np.random.seed(0)
@@ -64,16 +66,15 @@ def run(offset, window):
         target_width = [(x[1] - x[0]).days for x in zip(start, target)]
         actual_width = [(x[1] - x[0]).days for x in zip(start, end)]
 
-        bars.append(
-            ax.barh(
-                y_pos,
-                target_width,
-                left=left,
-                edgecolor='white',
-                linewidth=2,
-                color='#85aa00',
-                height=0.6,
-            ))
+        ax.barh(
+            y_pos,
+            target_width,
+            left=left,
+            edgecolor='white',
+            linewidth=2,
+            color='#85aa00',
+            height=0.6,
+        )
         ax.barh(
             y_pos,
             actual_width,
@@ -92,60 +93,55 @@ def run(offset, window):
                 size=8,
                 fontweight='bold',
             )
-
-    annot = ax.annotate(
-        '',
-        xy=(0, 0),
-        xytext=(-20, 20),
-        textcoords='offset points',
-        color='#9b9b9b',
-        bbox=dict(fc='white', ec='#9b9b9b'))
-
-    annot.set_visible(False)
-
-    def make_text(task):
-        text = task['name']
-        text += '\n\n' + textwrap.fill('Brief: ' + task['brief'])
-        if task['debrief']:
-            text += '\n\n' + textwrap.fill('Debrief: ' + task['debrief'])
-        return text
-
-    def update_annot(bar, i, j):
-        x = bar.get_x() + 1
-        y = bar.get_y()
-        annot.xy = (x, y)
-        text = make_text(layers[i][j])
-        annot.set_text(text)
-        annot.get_bbox_patch().set_alpha(1)
-
-    def select(event):
-        vis = annot.get_visible()
-        if event.inaxes == ax:
-            for i, layer in enumerate(bars):
-                for j, bar in enumerate(layer):
-                    cont, ind = bar.contains(event)
-                    if cont:
-                        update_annot(bar, i, j)
-                        annot.set_visible(True)
-                        fig.canvas.draw_idle()
-                        return
-        if vis:
-            annot.set_visible(False)
-            fig.canvas.draw_idle()
+        # transparent bar for hovering
+        bars.append(
+            ax.barh(
+                y_pos,
+                target_width,
+                left=left,
+                linewidth=2,
+                height=0.6,
+                zorder=1000,
+                alpha=0.0,
+            ))
 
     ax.set_yticks(y_pos)
     ax.set_yticklabels(team)
-    ax.invert_yaxis()  # labels read top-to-bottom
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
     ax.set_xlim(
         [offset - PROPORTION * window, offset + (1 - PROPORTION) * window])
 
-    fig.canvas.mpl_connect('button_press_event', select)
+    def make_text(task):
+        text = """
+        <div style="background-color:#ffffff; padding:10px; border-style:solid; border-width:1px; border-color:#3b3b3b">
+        <h6 style="font-size:10; color:#9b9b9b">{}</h6>
+        <p style="font-size:10; color:#9b9b9b"><strong>Brief:</strong> {}</p>
+        <div>
+        """.format(task['name'], task['brief'])
+        # if task['debrief']:
+        #     text += '\n\n' + textwrap.fill('Debrief: ' + task['debrief'])
+        return text
+
+    for i, layer in enumerate(bars):
+        for j, bar in enumerate(layer):
+            tooltip = mpld3.plugins.PointHTMLTooltip(
+                bar,
+                [make_text(layers[i][j])],
+                voffset=10,
+                hoffset=10,
+            )
+            mpld3.plugins.connect(fig, tooltip)
 
     plt.axvline(
-        x=0, linewidth=1, linestyle='dashed', color='#3b3b3b', zorder=-1)
-    plt.show()
+        x=-10,
+        linewidth=1,
+        linestyle='dashed',
+        color='#3b3b3b',
+        zorder=-1,
+    )
+
+    mpld3.show()
 
 
 if __name__ == '__main__':
