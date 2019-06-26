@@ -143,7 +143,7 @@ def run(offset, window):
         zorder=-1,
     )
 
-    mpld3.show(open_browser=False)
+    mpld3.show(ip='0.0.0.0', open_browser=False)
 
 
 if __name__ == '__main__':
