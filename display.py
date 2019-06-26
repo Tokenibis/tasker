@@ -36,6 +36,8 @@ def run(offset, window):
         [data[x]['tasks'][0]['start'] for x in data if data[x]['tasks']])
     null_task = {
         'name': '',
+        'brief': '',
+        'debrief': '',
         'start': min_date,
         'end': min_date,
         'target': min_date
