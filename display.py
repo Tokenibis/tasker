@@ -8,9 +8,12 @@ import matplotlib.pyplot as plt, mpld3
 
 from collections import OrderedDict
 from datetime import datetime, date
+from multiprocessing import Process
+from time import sleep
 
 WINDOW = 60
 PROPORTION = 0.60
+REFRESH = 3600
 
 
 def run(offset, window):
@@ -140,7 +143,7 @@ def run(offset, window):
         zorder=-1,
     )
 
-    mpld3.show()
+    mpld3.show(open_browser=False)
 
 
 if __name__ == '__main__':
@@ -159,6 +162,17 @@ if __name__ == '__main__':
         default=WINDOW,
         help='Total number of days to display',
     )
+    parser.add_argument(
+        '-r',
+        '--refresh',
+        type=int,
+        default=REFRESH,
+        help='set refresh intervval',
+    )
     args = parser.parse_args()
 
-    run(args.offset, args.window)
+    while True:
+        p = Process(target=run, args=(args.offset, args.window))
+        p.start()
+        sleep(args.refresh)
+        p.terminate()
