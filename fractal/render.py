@@ -29,6 +29,29 @@ TIERS = [
     'Bustard',
 ]
 
+SKINS = {
+    'light': {
+        'pos_color': lambda l, ml: '#{:02x}{:02x}{:02x}'.format(
+            220 - int(88 * l/ml),
+            230 - int(59 * l/ml),
+            220 - int(157 * l/ml),
+        ),
+        'neg_color': lambda l, ml: '#{0:02x}{0:02x}{0:02x}'.format(
+            250 - int(32 * l/ml),
+        ),
+        'back_color': lambda ml: '#ffffff',
+        'text_color': lambda ml: '#ffffff',
+    },
+    'dark': {
+        'pos_color': lambda l, ml: '#84ab3f',
+        'neg_color': lambda l, ml: '#{0:02x}{0:02x}{0:02x}'.format(
+            16 + int(32 * l/ml),
+        ),
+        'back_color': lambda ml: '#{0:02x}{0:02x}{0:02x}'.format(16),
+        'text_color': lambda ml: '#{0:02x}{0:02x}{0:02x}'.format(220),
+    },
+}
+
 
 def create_labels(data):
     labels = []
@@ -102,12 +125,8 @@ def create_figure(
         rotation,
         padding,
         gap,
+        skin,
         unlabeled_text=lambda l, ml: '',
-        pos_color=lambda l, ml: '#000000',
-        neg_color=lambda l, ml: '#ffffff',
-        back_color=lambda ml: '#ffffff',
-        text_color=lambda ml: '#000000',
-        neg_text=lambda ml: '#000000',
 ):
     g = gap / 2
     ml = len(fractals[0])
@@ -120,7 +139,7 @@ def create_figure(
             -size / 2,
             size,
             size,
-            fill=back_color(ml),
+            fill=skin['back_color'](ml),
         ))
     triangles = [y[0] for x in fractals[0] for y in x]
 
@@ -136,7 +155,8 @@ def create_figure(
                         (p[2] if q % 2 else (p[3] + g)) * (-1)**(q in [1, 2]),
                         ((p[5] + g) if q % 2 else p[4]) * (-1)**(q in [2, 3]),
                         (p[4] if q % 2 else (p[5] + g)) * (-1)**(q in [1, 2]),
-                        fill=pos_color(l, ml) if label else neg_color(l, ml),
+                        fill=skin['pos_color'](l, ml)
+                        if label else skin['neg_color'](l, ml),
                     ))
 
                 if not blank:
@@ -146,7 +166,7 @@ def create_figure(
                             (2**l) / 8,
                             (p[0] + p[4]) / 2 - (p[4] - p[0]) * 3 / 8,
                             (p[1] + p[5]) / 2 + g + (2**l) / 32,
-                            fill=text_color(ml),
+                            fill=skin['text_color'](ml),
                             transform='rotate({})'.format(q * 90),
                         ))
 
@@ -167,21 +187,8 @@ def render(data, output, levels, **kwargs):
     create_figure(
         fractals,
         output,
-        unlabeled_text=lambda l, ml: '{:,} {}'.format(4**l, TIERS[l].upper()),
-        pos_color=lambda l, ml: '#{:02x}{:02x}{:02x}'.format(
-            220 - int(88 * l/ml),
-            230 - int(59 * l/ml),
-            220 - int(157 * l/ml),
-        ),
-        neg_color=lambda l, ml: '#{0:02x}{0:02x}{0:02x}'.format(
-            250 - int(32 * l/ml),
-        ),
-        back_color=lambda ml: '#{0:02x}{0:02x}{0:02x}'.format(255),
-        # neg_color=lambda l, ml: '#{0:02x}{0:02x}{0:02x}'.format(
-        #     16 + int(32 * l/ml),
-        # ),
-        # back_color=lambda ml: '#{0:02x}{0:02x}{0:02x}'.format(16),
-        text_color=lambda ml: '#ffffff',
+        unlabeled_text=
+        lambda l, ml: '{:,} {}'.format(4**l, TIERS[l % len(TIERS)].upper()),
         **kwargs,
     )
 
@@ -244,10 +251,19 @@ if __name__ == '__main__':
         default=0,
     )
 
+    parser.add_argument(
+        '-s',
+        '--skin',
+        help='Themes to color the fractals',
+        default='light',
+    )
+
     args = parser.parse_args()
 
     with open(args.path) as fd:
         data = json.load(fd)
+
+    assert args.skin in SKINS, 'Skin not found'
 
     render(
         data[:200],
@@ -257,4 +273,5 @@ if __name__ == '__main__':
         rotation=args.rotation,
         gap=args.gap,
         padding=args.padding,
+        skin=SKINS[args.skin],
     )
