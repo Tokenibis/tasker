@@ -6,7 +6,7 @@ import argparse
 import drawSvg as draw
 
 TIERS = [
-    'Frogmouth',
+    'Ibis',
     'Hoatzin',
     'Kakapo',
     'Kagu',
@@ -17,8 +17,7 @@ TIERS = [
     'Owlet-Nightjar',
     'Coucal',
     'Guineafowl',
-    'Iider',
-    'Pheasant',
+    'Frogmouth',
     'Cock-of-the-Rock',
     'Potoo',
     'Kiwi',
