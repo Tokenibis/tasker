@@ -74,14 +74,14 @@ def create_labels(data):
 
 def create_fractals(labels, max_level):
     def create_fractal(h, x, y):
-        triangles = [[(
+        triangles = [[[
             x - h,  # 0 (x0)
             y + h,  # 1 (y1)
             x,  # 2 (x1)
             y + h * 2,  # 3 (y1)
             x + h,  # 4 (x2)
             y + h,  # 5 (y2)
-        )]]
+        ]]]
 
         if h <= 1:
             return triangles
@@ -91,7 +91,9 @@ def create_fractals(labels, max_level):
         right = create_fractal(h / 2, x + h, y + h)
 
         for i in range(len(bottom) - 1, -1, -1):
-            triangles = [bottom[i] + (left[i] + right[i])] + triangles
+            triangles = [
+                bottom[i] + [y for x in zip(left[i], right[i]) for y in x]
+            ] + triangles
 
         return triangles
 
