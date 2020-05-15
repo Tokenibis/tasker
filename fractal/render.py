@@ -51,6 +51,11 @@ SKINS = {
     },
 }
 
+EXTENSIONS = {
+    'svg': 'saveSvg',
+    'png': 'savePng',
+}
+
 
 def create_labels(data):
     labels = []
@@ -121,11 +126,13 @@ def create_fractals(labels, max_level):
 
 def create_figure(
         fractals,
-        output,
+        name,
+        extension,
         blank,
         rotation,
         padding,
         gap,
+        pixels,
         skin,
         unlabeled_text=lambda l, ml: '',
 ):
@@ -171,11 +178,11 @@ def create_figure(
                             transform='rotate({})'.format(q * 90),
                         ))
 
-    d.setPixelScale(8)  # Set number of pixels per geometry unit
-    d.saveSvg(output)
+    d.setPixelScale(pixels)  # Set number of pixels per geometry unit
+    getattr(d, EXTENSIONS[extension])('{}.{}'.format(name, extension))
 
 
-def render(data, output, levels, **kwargs):
+def render(data, levels, **kwargs):
     """Render the fractal
 
     Parameters:
@@ -187,7 +194,6 @@ def render(data, output, levels, **kwargs):
     fractals = create_fractals(labels, levels)
     create_figure(
         fractals,
-        output,
         unlabeled_text=
         lambda l, ml: '{:,} {}'.format(4**l, TIERS[l % len(TIERS)].upper()),
         **kwargs,
@@ -207,10 +213,17 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
-        '-o',
-        '--output',
-        help='Path to output svg file',
-        default='fractal.svg',
+        '-n',
+        '--name',
+        help='name of output file (minus extension)',
+        default='fractal',
+    )
+
+    parser.add_argument(
+        '-e',
+        '--extension',
+        help='Format of output file ({})'.format(EXTENSIONS),
+        default='svg',
     )
 
     parser.add_argument(
@@ -237,6 +250,14 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
+        '-x',
+        '--pixels',
+        help='Pixels per geometry unit',
+        type=int,
+        default=32,
+    )
+
+    parser.add_argument(
         '-p',
         '--padding',
         help='Size of padding',
@@ -255,7 +276,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '-s',
         '--skin',
-        help='Themes to color the fractals',
+        help='Themes to color the fractals ({})'.format(SKINS),
         default='light',
     )
 
@@ -264,15 +285,18 @@ if __name__ == '__main__':
     with open(args.path) as fd:
         data = json.load(fd)
 
+    assert args.extension in EXTENSIONS, 'Extension not supported'
     assert args.skin in SKINS, 'Skin not found'
 
     render(
         data[:200],
-        args.output,
+        name=args.name,
+        extension=args.extension,
         levels=args.levels,
         blank=args.blank,
         rotation=args.rotation,
         gap=args.gap,
         padding=args.padding,
+        pixels=args.pixels,
         skin=SKINS[args.skin],
     )
