@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import html
 import json
 import math
 import argparse
@@ -118,20 +119,20 @@ def calculate(data):
 
     last_funder = circles[0]
 
-    for _, area in tqdm(data[2:]):
-        positions = _propose(_radius(area), circles)
-        valid = _filter(_radius(area), circles, positions)
-        if area > 0:
-            circle = _choose_funder(_radius(area), valid)
+    for d in tqdm(data[2:]):
+        positions = _propose(_radius(d[1]), circles)
+        valid = _filter(_radius(d[1]), circles, positions)
+        if d[1] > 0:
+            circle = _choose_funder(_radius(d[1]), valid)
             last_funder = circle
         else:
-            circle = _choose_user(_radius(area), valid, last_funder)
+            circle = _choose_user(_radius(d[1]), valid, last_funder)
         circles.append(circle)
 
     return circles
 
 
-def build(circles, data, size, highlight=[], output='circles.svg'):
+def render(circles, data, size, highlight=[], output='circles.svg'):
     d = draw.Drawing(size, size, origin='center')
     d.append(draw.Rectangle(
         -size / 2,
@@ -141,70 +142,31 @@ def build(circles, data, size, highlight=[], output='circles.svg'):
         fill='white',
     ))
 
-    if circles and data:
-        last_funder_index = [i for i, d in enumerate(data) if d[1] > 0][-1]
-
-    def _color_funder(l, ml):
-        return '#{:02x}{:02x}{:02x}'.format(*([int(255 * (l / ml))] * 3))
-
     for i, item in enumerate(zip(circles, data)):
-        if i == last_funder_index:
-            circle = [x for x in circles[i]]
-            circle[2] = _radius(data[i][1] - sum(d[1] for d in data))
-        else:
-            circle = item[0]
+        circle = item[0]
 
-        if data[i][1] > 0:
-            color = _color_funder(circle[2], math.sqrt(item[1][1] / math.pi))
+        if item[1][1] > 0:
+            color = '#3b3b3b'
         else:
-            if data[i][0] and data[i][0] in highlight:
+            if item[1][0] and item[1][0] in highlight:
                 color = '#ffff00'
             else:
                 color = '#84ab3f'
 
-        d.append(draw.Circle(*circle, fill=color))
+        d.append(
+            draw.Circle(
+                *circle,
+                fill=color,
+                amount=item[1][1],
+                person=item[1][0],
+                target=item[1][2] if len(item[1]) >= 4 else '',
+                description=html.escape(item[1][3]) if len(item[1]) >= 4 else '',
+            ))
 
     d.saveSvg(output)
 
 
-def explode(circles, data, size, max_area, highlight=[], output='circles.svg'):
-    d = draw.Drawing(size, size, origin='center')
-
-    def _color_background(l, ml):
-        return '#{:02x}{:02x}{:02x}'.format(
-            int(132 + (255 - 132) * (l / ml)),
-            int(171 + (255 - 171) * (l / ml)),
-            int(63 + (255 - 63) * (l / ml)),
-        )
-
-    d.append(
-        draw.Rectangle(
-            -size / 2,
-            -size / 2,
-            size,
-            size,
-            fill=_color_background(
-                sum(-d[1] for d in data if d[1] < 0),
-                max_area,
-            ),
-        ))
-
-    for i, item in enumerate(zip(circles, data)):
-        circle = item[0]
-
-        if data[i][1] < 0:
-            if i == 0:
-                color = '#ffcfcf'
-                circle = [circle[0], circle[1], circle[2] * 3]
-            else:
-                color = '#84ab3f'
-
-            d.append(draw.Circle(*circle, fill=color))
-
-    d.saveSvg(output)
-
-
-def run(funders, users, highlight=[]):
+def run(funders, users, highlight=[], output='circles.svg'):
 
     data = []
     balance = 0
@@ -216,7 +178,12 @@ def run(funders, users, highlight=[]):
 
         while index < len(users) and users[index][1] <= balance:
             balance -= users[index][1]
-            data.append((users[index][0], -users[index][1]))
+            data.append((
+                users[index][0],
+                -users[index][1],
+                users[index][2],
+                users[index][3],
+            ))
             index += 1
 
         if index == len(users):
@@ -233,25 +200,7 @@ def run(funders, users, highlight=[]):
             json.dump(circles, fd, indent=2)
 
     size = 2 * max(_distance(c) + c[2] for c in circles)
-
-    for i in range(len(list((zip(circles, data))))):
-        build(
-            circles[:i],
-            data[:i],
-            size,
-            highlight,
-            output='output/circles_{}.svg'.format(i),
-        )
-
-    for i in range(len(list((zip(circles, data)))) + 1):
-        explode(
-            circles[i:],
-            data[i:],
-            size,
-            sum(-d[1] for d in data if d[1] < 0),
-            highlight,
-            output='output/circles_{}.svg'.format(
-                len(list(zip(circles, data))) + i))
+    render(circles, data, size, highlight, output)
 
 
 if __name__ == '__main__':
@@ -279,6 +228,14 @@ if __name__ == '__main__':
         default=[],
     )
 
+    parser.add_argument(
+        '-o',
+        '--output',
+        help='output file',
+        action='append',
+        default='circles.svg',
+    )
+
     args = parser.parse_args()
 
     with open(args.funders) as fd:
@@ -287,4 +244,4 @@ if __name__ == '__main__':
     with open(args.users) as fd:
         users = json.load(fd)
 
-    run(funders, users, args.highlight)
+    run(funders, users, args.highlight, args.output)

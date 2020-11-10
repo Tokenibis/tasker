@@ -4,5 +4,6 @@ fractal/*.json
 fractal/*.png
 fractal/*.svg
 
-circles/output
+circles/*.svg
 circles/*.json
+circles/html/*.svg
