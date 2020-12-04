@@ -9,8 +9,9 @@
 	width: fit-content;
     }
     #dataWrapper {
-	margin: 0 auto;
+	width: 840px;
 	display: flex;
+	justify-content: space-between;
     }
     #circles {
 	width: 400px;
@@ -23,16 +24,20 @@
 	opacity: 0;
     }
     #feedWrapper > p {
-        font-family: "Lucida Console", Monaco, monospace;
+        font-family: Arial, Helvetica, sans-serif;
         color: #84ab3f;
-	font-size: 10px;
-	height: 10px;
+	font-size: 16px;
+	height: 16px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 	padding-left: 20px;
     }
     #captions {
-        font-family: "Lucida Console", Monaco, monospace;
+        font-family: Arial, Helvetica, sans-serif;
         color: #3b3b3b;
-        font-size: 16px;
+        font-size: 24px;
+        height: 24px;
 	padding-left: 20px;
 	padding-right: 20px;
 	padding-bottom: 40px;
@@ -41,10 +46,10 @@
 	width: 100%;
     }
     #link {
-        font-family: "Lucida Console", Monaco, monospace;
+        font-family: Arial, Helvetica, sans-serif;
 	text-decoration: none;
 	font-weight: bold;
-	font-size: 18px;
+	font-size: 24px;
 	color: #ffffff;
     }
   </style>
@@ -63,17 +68,10 @@
 	 <p></p>
 	 <p></p>
 	 <p></p>
-	 <p></p>
-	 <p></p>
-	 <p></p>
-	 <p></p>
-	 <p></p>
-	 <p></p>
-	 <p></p>
        </div>
        <object id="circles" data="circles.svg" type="image/svg+xml"></object>
      </div>
-     <p id="captions">&#9608<p>
+     <p id="captions"><p>
        <audio id="audio" controls onplay="render()">
 	 <source src="music.mp3" type="audio/mpeg">
 	   Your browser does not support the audio tag.
@@ -83,7 +81,7 @@
 
       const speed = {
 	character: 25,
-	pause: 720,
+	pause: 725,
 	line: 1440,
 	section: 2000,
       }
@@ -122,7 +120,7 @@
 	let feed = document.getElementById('feedWrapper');
 	let child = document.createElement('p');
 
-	message = message.slice(0, 50);
+	message = message.slice(0, 100);
 
 	feed.removeChild(feed.children[0]);
 	child.innerHTML = message;
@@ -144,24 +142,24 @@
 	  modifier = 1.0;
 	}
 	console.log(modifier);
-	document.getElementById(element).innerHTML = '&#9608';
+	document.getElementById(element).innerHTML = ' ';
 
 	for (i = 0; i < text.length; i++) {
 	  if (i < text.length) {
   	    if (text.charAt(i) == '\n') {
 	      await sleep(speed.line * modifier);
-	      document.getElementById(element).innerHTML = '&#9608';
+	      document.getElementById(element).innerHTML = ' ';
 	      pos = 0;
 	    } else if (text.charAt(i) === '|') {
 	      await sleep(speed.pause * modifier);
 	    } else if (text.charAt(i) === '[') {
 	      backpoint = pos;
 	    } else if (text.charAt(i) === ']') {
-	      document.getElementById(element).innerHTML = document.getElementById(element).innerHTML.slice(0, backpoint) + '&#9608';
+	      document.getElementById(element).innerHTML = document.getElementById(element).innerHTML.slice(0, backpoint) + ' ';
 	      pos = document.getElementById(element).innerHTML.length - 1;
             } else {
 	      await sleep(speed.character * modifier);
-	      document.getElementById(element).innerHTML = document.getElementById(element).innerHTML.slice(0, -1) + text.charAt(i) + '&#9608';
+	      document.getElementById(element).innerHTML = document.getElementById(element).innerHTML.slice(0, -1) + text.charAt(i) + ' ';
 	      pos++;
 	    }
 	  }
@@ -246,7 +244,7 @@ One $3,000 check told ${numInitial} different stories.`
 	await typeWrite(text);
 
 	// --- Remaining Donations -------------------------------------------//
-	text = `Soon, people started giving *us* money...
+	text = `Soon, people started giving us money...
 And we put it right back into the app.| 100% of it.
 We opened it up for anyone to join.
 It was a new kind of social media.| A more positive kind.
@@ -254,7 +252,7 @@ More money turned into more [donations.|][stories.|]voices.
 Age...| income...| politics...| how much does it matter?
 We are all part of this community.| We are all part the solution.
 The status quo stands in the way.
-Modern systems perpetuate bloat and inequality.
+Modern institutions promote divisiveness and inequality.
 They value numbers over experiences;| dollars over people.
 We saw a broken system.| So we built a new one.`
 
@@ -299,7 +297,7 @@ But in the hands of the community?`
 	// --- Impact --------------------------------------------------------//
 	text = `It's the start of a movement.
 Every person has a voice.| Every dollar tells a story.
-How many [stories can you see in this picture?|][meals?|][nights of shelter?|][personal relationships?][hours of education?][acts of kindness?][moments of inspiration?]voices can you hear in this story?`
+How many [stories can you see in this picture?|][meals?|][nights of shelter?|][hours of learning?][new relationships?][acts of kindness?][moments of inspiration?]voices can you hear in this story?`
 
 	lastFunder.style.display = "none";
 	for (let i = 0; i < circles.length + 1; i++) {
@@ -329,7 +327,7 @@ How many [stories can you see in this picture?|][meals?|][nights of shelter?|][p
 
 	//--- Climax ---------------------------------------------------------//
 	text = `It's time to talk about Universal Basic Philanthropy.
-The movement starts now.`
+The next chapter starts now.`
 
 	await typeWrite(text);
 
@@ -349,7 +347,7 @@ The movement starts now.`
 	link.setAttribute('id', 'link');
 	link.setAttribute('href', 'https://app.tokenibis.org');
 	link.style.position = 'fixed';
-	link.style.left = (x - 'app.tokenibis.org'.length * 18 * 0.32).toString() + 'px';
+	link.style.left = (x - 'app.tokenibis.org'.length * 18 * 0.30).toString() + 'px';
 	link.style.top = (y + 18).toString() + 'px';
 	await typeWrite('app.tokenibis.org', 'link', 2, true);
 	link.innerHTML = link.innerHTML.slice(0, -1);
