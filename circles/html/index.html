@@ -244,7 +244,7 @@ One $3,000 check told ${numInitial} different stories.`
 	await typeWrite(text);
 
 	// --- Remaining Donations -------------------------------------------//
-	text = `Soon, people started giving us money...
+	text = `We set out to raise more money...
 And we put it right back into the app.| 100% of it.
 We opened it up for anyone to join.
 It was a new kind of social media.| A more positive kind.
@@ -345,11 +345,11 @@ The next chapter starts now.`
 	let link = document.createElement('a');
 	content.appendChild(link)
 	link.setAttribute('id', 'link');
-	link.setAttribute('href', 'https://app.tokenibis.org');
+	link.setAttribute('href', 'https://tokenibis.org');
 	link.style.position = 'fixed';
-	link.style.left = (x - 'app.tokenibis.org'.length * 18 * 0.30).toString() + 'px';
+	link.style.left = (x - 'tokenibis.org'.length * 18 * 0.30).toString() + 'px';
 	link.style.top = (y + 18).toString() + 'px';
-	await typeWrite('app.tokenibis.org', 'link', 2, true);
+	await typeWrite('tokenibis.org', 'link', 2, true);
 	link.innerHTML = link.innerHTML.slice(0, -1);
       }
     </script>
