@@ -3,6 +3,7 @@
 import html
 import json
 import math
+import bisect
 import argparse
 import drawSvg as draw
 
@@ -11,15 +12,116 @@ from tqdm import tqdm
 EPSILON = 1e-4
 
 
-def _distance(p):
-    return math.sqrt(p[0]**2 + p[1]**2)
+def _distance(p1, p2=(0, 0)):
+    return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
 
 
 def _radius(area):
     return math.sqrt(abs(area) / math.pi)
 
 
-def _propose(radius, circles):
+class Grid:
+    """Stores circles in a grid and return all circles that are relevant
+    to a specific point
+
+    """
+
+    SIZE = 8
+
+    def __init__(self, circles=[]):
+        self.grid = [[[] for _ in range(4)] for _ in range(4)]
+
+        self.circles = []
+
+        for c in circles:
+            self.add_circle(c)
+
+    def add_circle(self, circle):
+        while math.ceil((max(abs(circle[0]), abs(circle[1])) + circle[2]) /
+                        Grid.SIZE) >= int(len(self.grid) / 2):
+            self.grid = [
+                [[] for _ in range(len(self.grid[0]) * 2)]
+                for _ in range(int(len(self.grid) / 2))
+            ] + [[[] for _ in range(int(len(self.grid[0]) / 2))] + self.grid[j]
+                 + [[] for _ in range(int(len(self.grid[0]) / 2))]
+                 for j in range(int(len(self.grid)))
+                 ] + [[[] for _ in range(len(self.grid) * 2)]
+                      for _ in range(int(len(self.grid) / 2))]
+
+        for j, i in self._get_squares(circle):
+            self.grid[j][i].append(circle)
+        self.circles.append(circle)
+
+    def get_circles(self, circle):
+        return self.circles
+        seen = set()
+        for j, i in self._get_squares(circle):
+            if j < len(self.grid) and i < len(self.grid[0]):
+                for c in self.grid[j][i]:
+                    if c in seen:
+                        continue
+                    seen.add((j, i))
+                    yield c
+
+    def _get_squares(self, circle):
+        for j in range(
+                int(
+                    math.floor((circle[0] - circle[2]) / Grid.SIZE) +
+                    len(self.grid) / 2),
+                int(
+                    math.ceil((circle[0] + circle[2]) / Grid.SIZE) +
+                    len(self.grid) / 2),
+        ):
+            for i in range(
+                    int(
+                        math.floor((circle[1] - circle[2]) / Grid.SIZE) +
+                        len(self.grid[0]) / 2),
+                    int(
+                        math.ceil((circle[1] + circle[2]) / Grid.SIZE) +
+                        len(self.grid[0]) / 2),
+            ):
+                if _distance(circle, (
+                        (j - len(self.grid) / 2) * Grid.SIZE,
+                        (i - len(self.grid[0]) / 2) * Grid.SIZE,
+                )) <= circle[2] + (Grid.SIZE * 2):
+                    yield (j, i)
+
+
+class Proximities:
+    """Stores distances between circles (edge to edge) and returns pairs
+    that are less than a given distance
+
+    """
+
+    def __init__(self, circles=[]):
+        self.circles = {}
+        self.proximities = []
+
+        for c in circles:
+            self.add_circle(c)
+
+    def add_circle(self, c2):
+        for c1 in self.circles:
+            bisect.insort(
+                self.proximities,
+                (max(0,
+                     _distance(c1, c2) - c1[2] - c2[2]), c1, c2),
+            )
+        self.circles[c2] = len(self.circles)
+
+    def get_circles(self, distance):
+        return sorted(
+            [
+                x[1:] for x in self.proximities[:bisect.bisect_right(
+                    self.proximities,
+                    (distance + EPSILON, None, None),
+                )]
+            ],
+            key=lambda x: (self.circles[x[0]], self.circles[x[1]]),
+        )
+
+
+def _propose(radius, proximities):
     def _intersections(c1, c2):
         x0, y0, r0 = c1
         x1, y1, r1 = c2
@@ -61,12 +163,12 @@ def _propose(radius, circles):
             )]
 
     return [
-        p for i, c1 in enumerate(circles) for c2 in circles[i:]
+        p for c1, c2 in proximities.get_circles(radius * 2)
         for p in _intersections(c1, c2)
     ]
 
 
-def _filter(radius, circles, positions):
+def _filter(radius, grid, positions):
     def _valid(c1, c2):
         x0, y0, r0 = c1
         x1, y1, r1 = c2
@@ -80,10 +182,13 @@ def _filter(radius, circles, positions):
         return True
 
     result = []
+
     for p in positions:
         is_valid = True
-        for c in reversed(circles):
-            if not _valid((p[0], p[1], radius), c):
+        candidate = (p[0], p[1], radius)
+
+        for c in grid.get_circles(candidate):
+            if not _valid(candidate, c):
                 is_valid = False
                 break
         if is_valid:
@@ -93,41 +198,47 @@ def _filter(radius, circles, positions):
 
 
 def _choose_funder(radius, positions):
-    return list(min(
-        positions,
-        key=lambda p: _distance(p),
-    )) + [radius]
+    return tuple(
+        list(min(
+            positions,
+            key=lambda p: _distance(p),
+        )) + [radius])
 
 
 def _choose_user(radius, positions, funder):
-    return list(
-        min(
-            positions,
-            key=
-            lambda p: math.sqrt((p[0] - funder[0])**2 + (p[1] - funder[1])**2),
-        )) + [radius]
+    return tuple(
+        list(
+            min(
+                positions,
+                key=
+                lambda p: math.sqrt((p[0] - funder[0])**2 + (p[1] - funder[1])**2),
+            )) + [radius])
 
 
 def calculate(data):
     assert len(data) >= 2
 
     circles = [
-        [0, 0, _radius(data[0][1])],
-        [0, _radius(data[0][1]) + _radius(data[1][1]),
-         _radius(data[1][1])],
+        (0, 0, _radius(data[0][1])),
+        (0, _radius(data[0][1]) + _radius(data[1][1]), _radius(data[1][1])),
     ]
+
+    proximities = Proximities(circles)
+    grid = Grid(circles)
 
     last_funder = circles[0]
 
     for d in tqdm(data[2:]):
-        positions = _propose(_radius(d[1]), circles)
-        valid = _filter(_radius(d[1]), circles, positions)
+        positions = _propose(_radius(d[1]), proximities)
+        valid = _filter(_radius(d[1]), grid, positions)
         if d[1] > 0:
             circle = _choose_funder(_radius(d[1]), valid)
             last_funder = circle
         else:
             circle = _choose_user(_radius(d[1]), valid, last_funder)
         circles.append(circle)
+        proximities.add_circle(circle)
+        grid.add_circle(circle)
 
     return circles
 
@@ -158,9 +269,10 @@ def render(circles, data, size, highlight=[], output='circles.svg'):
                 *circle,
                 fill=color,
                 amount=item[1][1],
-                person=item[1][0],
-                target=item[1][2] if len(item[1]) >= 4 else '',
-                description=html.escape(item[1][3]) if len(item[1]) >= 4 else '',
+                person=html.escape(item[1][0]),
+                target=html.escape(item[1][2]) if len(item[1]) >= 4 else '',
+                description=html.escape(item[1][3])
+                if len(item[1]) >= 4 else '',
             ))
 
     d.saveSvg(output)
