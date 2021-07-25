@@ -53,7 +53,6 @@ class Grid:
         self.circles.append(circle)
 
     def get_circles(self, circle):
-        return self.circles
         seen = set()
         for j, i in self._get_squares(circle):
             if j < len(self.grid) and i < len(self.grid[0]):
